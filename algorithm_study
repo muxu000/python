@@ -1,0 +1,108 @@
+import matplotlib.pyplot as plt
+import numpy as np
+class MyCustomError(Exception):
+
+		def __init__(self,message):
+			super().__init__(message)
+			self.message = message
+class pi_get():
+	def __init__(self):
+		'''
+		pi_get is use Monte Carlo method to simulate the value of pi
+		init setting,all start from here
+		count_pi:the total num of dot which on the round
+		count_pi:the total num of dot which out the round 
+		r:the radius of round
+		x0,yo:the position of center
+		sum_sampl:the number of generated sample each other
+		'''
+		#setting the pic,text
+		self.fig,self.ax = plt.subplots(figsize=(7,7))
+		self.text =self.ax.text(5,5,'',ha='center',va='center',fontsize=20)
+		self.text.set_bbox(dict(facecolor='white',alpha=1,edgecolor='black'))
+
+		self.count_pi = 0
+		self.count_square = 0
+		self.r = 3  
+		self.x0 = 5
+		self.y0 = 3
+		self.sum_sample = 20
+
+		self.plt_squart_round(self.ax,self.x0,self.y0,self.r)
+		self.mtkl(self.fig,self.ax,self.count_pi,self.count_square,self.text,self.x0,self.y0,self.r)
+		plt.show()
+	def mtkl(self,fig,ax,count_pi,count_square,text,x0,y0,r):
+		'''
+		run the flow:put the dot on plot-->get the plot-->compute pi
+		random generate x,y————in the range of squart
+		'''
+		for i in range(2000000):
+			# if i ==1:
+			# 	sum_sample = 10
+			# else:
+			# 	sum_sample = 20
+			sum_sample = self.sum_sample
+			x_random = (x0-r)+2*r*np.random.rand(sum_sample)
+			y_random = (y0-r)+2*r*np.random.rand(sum_sample)
+
+			ax_sca = self.updata_plot(ax,x_random,y_random)
+			count_pi,count_square=self.get_data(ax,count_pi,count_square,x0,y0,r)
+			pi = self.simulate_pi(count_pi,count_square)
+			
+			text.set_text(str('%.10f'%pi))
+			ax_sca.remove()
+			print(f'num:{i}\tall_sample:{count_pi+count_square}\t\tcount_pi:{count_pi}\t\tcount_square:{count_square}\t\tpi:{pi}')
+			
+		pass
+	def updata_plot(self,ax,x,y):
+		'''updata the dot which on the plot'''
+		ax_sca=ax.scatter(x,y,s=10)
+		# plt.draw()
+		# plt.pause(np.random.randint(10)/20)
+		plt.pause(0.25)
+		ax_sca.set_visible(False)
+		# ax_sca.remove()
+		return ax_sca
+	
+	def get_data(self,ax,count_pi,count_square,x0,y0,r):
+		''' get the pot position of plot'''
+		r_2 = r**2
+		count =0
+		for point in ax.collections[count].get_offsets():
+			# print(len(ax.collections[0].get_offsets()))
+		    if point[0]<x0-r or point[0]>x0+r or point[1]<y0-r or point[1]>y0+r:
+		    	# print(point)
+		    	my = MyCustomError("out the limit")
+		    	raise my
+		    else:
+		    	if (point[0]-x0)**2+(point[1]-y0)**2 <= r_2:
+		    		count_pi += 1
+		    		# print('get_data count_pi:',count_pi)
+		    	else:
+		    		count_square += 1
+		# print(ax.collections[count].get_offsets())
+		return (count_pi,count_square)
+		pass
+	def simulate_pi(self,count_pi,count_square):
+		pi = 4*count_pi/(count_pi+count_square)
+		return pi
+		pass
+
+	def plt_squart_round(self,ax,x0,y0 ,r):
+		'''plot a squart and a round'''
+		x = np.arange(x0-r,x0+r+1)
+		x_boundary = np.arange(y0-r,y0+r+1)
+		y = np.ones(len(x))
+		
+		x_r = np.arange(x0-r,x0+r+0.01,0.01)
+		y1 = y0+np.sqrt(r**2-(x_r-x0)**2)
+		y2 = y0-np.sqrt(r**2-(x_r-x0)**2)
+
+		ax.plot(x,(y0+r)*y)
+		ax.plot((x0-r)*y,x_boundary)
+		ax.plot((x0+r)*y,x_boundary)
+		ax.plot(x,(y0-r)*y)
+		ax.plot(x_r,y1)
+		ax.plot(x_r,y2)
+if __name__ == '__main__':
+	pi_get()
